@@ -1,4 +1,13 @@
-let seed = new URLSearchParams(window.location.search).get('seed');
+const searchParams = new URLSearchParams(window.location.search);
+let seed = searchParams.get('seed');
+
+function newSeed() {
+    seed = randomSeed();
+    searchParams.set('seed', seed);
+    const newRelativePathQuery = window.location.pathname + '?' + searchParams.toString();
+    history.pushState(null, '', newRelativePathQuery);
+    window.location.reload();
+}
 
 function randomSeed() {
     let result = '0x';
