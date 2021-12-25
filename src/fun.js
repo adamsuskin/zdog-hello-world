@@ -76,34 +76,54 @@ function randomBezierInSpace(lastPoint) {
     ];
 }
 
-const numPoints = r.random_int(5, 9);
-const dynamicPath = [
-    randomBezierInSpace(),
-];
-for (let i = 0; i < numPoints - 1; i++) {
-    dynamicPath.push(randomBezierInSpace(endpointInBezier(dynamicPath[i])));
+function toLengthTwo(str) {
+    let zerosToAdd = 2 - str.length;
+    let newStr = str;
+    while (zerosToAdd > 0) {
+        newStr = "0" + newStr;
+        zerosToAdd--;
+    }
+    return newStr;
 }
 
 function randomColor() {
-    const red = r.random_int(0, 255).toString(16);
-    const green = r.random_int(0, 255).toString(16);
-    const blue = r.random_int(0, 255).toString(16);
+    const red = toLengthTwo(r.random_int(0, 255).toString(16));
+    const green = toLengthTwo(r.random_int(0, 255).toString(16));
+    const blue = toLengthTwo(r.random_int(0, 255).toString(16));
     return '#' + red + green + blue;
 }
 
-let artwork = new Zdog.Shape({
-    addTo: illo,
-    stroke: 5,
-    closed: false,
-    color: randomColor(),
-    path: convertBezierArrayToPath(dynamicPath),
-});
+const numArtwork = r.random_int(1, 4);
+
+const artworks = [];
+const dynamicPathes = [];
+for (let i = 0; i < numArtwork; i++) {
+    const numPoints = r.random_int(2, 4);
+    const dynamicPath = [
+        randomBezierInSpace(),
+    ];
+    for (let i = 0; i < numPoints - 1; i++) {
+        dynamicPath.push(randomBezierInSpace(endpointInBezier(dynamicPath[i])));
+    }
+    dynamicPathes.push(dynamicPath);
+    artworks.push(new Zdog.Shape({
+        addTo: illo,
+        stroke: 5,
+        closed: false,
+        color: randomColor(),
+        path: convertBezierArrayToPath(dynamicPath),
+    }))
+}
 
 function animatePath() {
-    dynamicPath.shift();
-    dynamicPath.push(randomBezierInSpace());
-    artwork.path = convertBezierArrayToPath(dynamicPath);
-    artwork.updatePath();
+    for (let i = 0; i < numArtwork; i++) {
+        const dynamicPath = dynamicPathes[i];
+        const artwork = artworks[i];
+        dynamicPath.shift();
+        dynamicPath.push(randomBezierInSpace());
+        artwork.path = convertBezierArrayToPath(dynamicPath);
+        artwork.updatePath();
+    }
 }
 
 function slowDown(func, count) {
@@ -117,7 +137,8 @@ function slowDown(func, count) {
     };
 }
 
-const slowedAnimatedPath = slowDown(animatePath, 10);
+const speed = r.random_int(5, 10);
+const slowedAnimatedPath = slowDown(animatePath, speed);
 
 function animate() {
     slowedAnimatedPath();
@@ -127,3 +148,4 @@ function animate() {
 }
 
 animate();
+document.getElementsByClassName('zdog-canvas')[0].style.backgroundColor = randomColor();
